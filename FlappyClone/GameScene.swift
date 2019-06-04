@@ -109,10 +109,148 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
     }
     
-    override func didMove(to view: SKView) {
+    override func didMoveToView(view: SKView) {
         /* Setup your scene here */
         
         createScene()
+        
+    }
+    
+    func createBTN(){
+        
+        restartBTN = SKSpriteNode(imageNamed: "RestartBtn")
+        restartBTN.size = CGSizeMake(200, 100)
+        restartBTN.position = CGPoint(x: self.frame.width / 2, y: self.frame.height / 2)
+        restartBTN.zPosition = 6
+        restartBTN.setScale(0)
+        self.addChild(restartBTN)
+        restartBTN.runAction(SKAction.scaleTo(1.0, duration: 0.3))
+        
+    }
+    
+    func didBeginContact(contact: SKPhysicsContact) {
+        let firstBody = contact.bodyA
+        let secondBody = contact.bodyB
+        
+      
+        if firstBody.categoryBitMask == PhysicsCatagory.Score && secondBody.categoryBitMask == PhysicsCatagory.Ghost{
+            
+            score++
+            scoreLbl.text = "\(score)"
+            firstBody.node?.removeFromParent()
+            
+        }
+        else if firstBody.categoryBitMask == PhysicsCatagory.Ghost && secondBody.categoryBitMask == PhysicsCatagory.Score {
+            
+            score++
+            scoreLbl.text = "\(score)"
+            secondBody.node?.removeFromParent()
+            
+        }
+        
+        else if firstBody.categoryBitMask == PhysicsCatagory.Ghost && secondBody.categoryBitMask == PhysicsCatagory.Wall || firstBody.categoryBitMask == PhysicsCatagory.Wall && secondBody.categoryBitMask == PhysicsCatagory.Ghost{
+            
+            enumerateChildNodesWithName("wallPair", usingBlock: ({
+                (node, error) in
+                
+                node.speed = 0
+                self.removeAllActions()
+                
+            }))
+            if died == false{
+                died = true
+                createBTN()
+            }
+        }
+        else if firstBody.categoryBitMask == PhysicsCatagory.Ghost && secondBody.categoryBitMask == PhysicsCatagory.Ground || firstBody.categoryBitMask == PhysicsCatagory.Ground && secondBody.categoryBitMask == PhysicsCatagory.Ghost{
+            
+            enumerateChildNodesWithName("wallPair", usingBlock: ({
+                (node, error) in
+                
+                node.speed = 0
+                self.removeAllActions()
+                
+            }))
+            if died == false{
+                died = true
+                createBTN()
+            }
+        }
+
+        
+        
+        
+        
+    }
+    
+    
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if gameStarted == false{
+            
+            gameStarted =  true
+            
+            Ghost.physicsBody?.affectedByGravity = true
+            
+            let spawn = SKAction.runBlock({
+                () in
+                
+                self.createWalls()
+                
+            })
+            
+            let delay = SKAction.waitForDuration(1.5)
+            let SpawnDelay = SKAction.sequence([spawn, delay])
+            let spawnDelayForever = SKAction.repeatActionForever(SpawnDelay)
+            self.runAction(spawnDelayForever)
+            
+            
+            let distance = CGFloat(self.frame.width + wallPair.frame.width)
+            let movePipes = SKAction.moveByX(-distance - 50, y: 0, duration: NSTimeInterval(0.008 * distance))
+            let removePipes = SKAction.removeFromParent()
+            moveAndRemove = SKAction.sequence([movePipes, removePipes])
+            
+            Ghost.physicsBody?.velocity = CGVectorMake(0, 0)
+            Ghost.physicsBody?.applyImpulse(CGVectorMake(0, 90))
+        }
+        else{
+            
+            if died == true{
+                
+                
+            }
+            else{
+                Ghost.physicsBody?.velocity = CGVectorMake(0, 0)
+                Ghost.physicsBody?.applyImpulse(CGVectorMake(0, 90))
+            }
+            
+        }
+        
+<<<<<<<
+        createScene()
+=======
+
+>>>>>>>
+        
+        
+        
+        for touch in touches{
+            let location = touch.locationInNode(self)
+            
+            if died == true{
+                if restartBTN.containsPoint(location){
+                    restartScene()
+                    
+                }
+                
+                
+            }
+            
+        }
+        
+        
+        
+        
+        
         
     }
     
